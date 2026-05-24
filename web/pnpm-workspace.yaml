@@ -1,0 +1,5 @@
+allowBuilds:
+  better-sqlite3: true
+  sharp: set this to true or false
+onlyBuiltDependencies:
+  - better-sqlite3

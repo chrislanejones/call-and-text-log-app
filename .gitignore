@@ -1,0 +1,23 @@
+sms-*.xml
+calls-*.xml
+*_backup_&_restore_app.zip
+
+# parser
+parser/target/
+
+# generated data
+data/data.db
+data/data.db-journal
+data/data.db-wal
+data/data.db-shm
+data/mms/
+
+# web
+web/node_modules/
+web/.next/
+web/out/
+web/.env.local
+web/package-lock.json
+web/yarn.lock
+web/tsconfig.tsbuildinfo
+web/next-env.d.ts
