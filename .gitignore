@@ -1,22 +1,33 @@
+# --- Source data (never commit — contains real messages, contacts, media) ---
+# Raw exports
 sms-*.xml
 calls-*.xml
 *_backup_&_restore_app.zip
 
-# parser
+# Entire generated data folder
+data/
+
+# Any SQLite/database file, anywhere in the tree
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+
+# Env / secrets, anywhere in the tree
+.env
+.env.*
+!.env.example
+
+# --- Rust ---
 parser/target/
 
-# generated data
-data/data.db
-data/data.db-journal
-data/data.db-wal
-data/data.db-shm
-data/mms/
-
-# web
+# --- Web ---
 web/node_modules/
 web/.next/
 web/out/
-web/.env.local
 web/package-lock.json
 web/yarn.lock
 web/tsconfig.tsbuildinfo
