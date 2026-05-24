@@ -21,11 +21,11 @@ struct Cli {
     /// Calls XML file (calls-*.xml)
     #[arg(long)]
     calls: Option<PathBuf>,
-    /// Output SQLite database
-    #[arg(long, default_value = "../data/data.db")]
+    /// Output SQLite database (relative to current working directory)
+    #[arg(long, default_value = "data/data.db")]
     db: PathBuf,
-    /// Output directory for extracted MMS images
-    #[arg(long, default_value = "../data/mms")]
+    /// Output directory for extracted MMS images (relative to current working directory)
+    #[arg(long, default_value = "data/mms")]
     images: PathBuf,
 }
 
