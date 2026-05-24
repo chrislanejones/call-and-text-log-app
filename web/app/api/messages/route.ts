@@ -22,7 +22,7 @@ export function GET(req: NextRequest) {
     type: num(sp.get("type")),
     dateFrom: num(sp.get("dateFrom")),
     dateTo: num(sp.get("dateTo")),
-    limit: num(sp.get("limit")) ?? 500,
+    limit: num(sp.get("limit")) ?? 50000,
     offset: num(sp.get("offset")) ?? 0,
   };
   const messages = listMessages(filters);

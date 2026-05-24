@@ -116,25 +116,30 @@ export function listMessages(filters: MessageFilters): Message[] {
   if (messages.length === 0) return messages;
 
   // Attach attachments for any MMS rows with images.
+  // SQLite default param limit is 999 — chunk to stay safely under it.
   const ids = messages.filter((m) => m.has_images).map((m) => m.rowid);
   if (ids.length > 0) {
-    const placeholders = ids.map(() => "?").join(",");
-    const atts = db
-      .prepare(
-        `SELECT message_rowid, hash, content_type, filename, size
-         FROM attachments WHERE message_rowid IN (${placeholders})`,
-      )
-      .all(...ids) as (Attachment & { message_rowid: number })[];
     const byMsg = new Map<number, Attachment[]>();
-    for (const a of atts) {
-      const arr = byMsg.get(a.message_rowid) ?? [];
-      arr.push({
-        hash: a.hash,
-        content_type: a.content_type,
-        filename: a.filename,
-        size: a.size,
-      });
-      byMsg.set(a.message_rowid, arr);
+    const CHUNK = 900;
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      const slice = ids.slice(i, i + CHUNK);
+      const placeholders = slice.map(() => "?").join(",");
+      const atts = db
+        .prepare(
+          `SELECT message_rowid, hash, content_type, filename, size
+           FROM attachments WHERE message_rowid IN (${placeholders})`,
+        )
+        .all(...slice) as (Attachment & { message_rowid: number })[];
+      for (const a of atts) {
+        const arr = byMsg.get(a.message_rowid) ?? [];
+        arr.push({
+          hash: a.hash,
+          content_type: a.content_type,
+          filename: a.filename,
+          size: a.size,
+        });
+        byMsg.set(a.message_rowid, arr);
+      }
     }
     for (const m of messages) {
       if (m.has_images) m.attachments = byMsg.get(m.rowid) ?? [];
