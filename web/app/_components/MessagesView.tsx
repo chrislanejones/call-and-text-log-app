@@ -318,6 +318,7 @@ export default function MessagesView() {
 }
 
 type GalleryItem = {
+  key: string; // guaranteed unique: messageRowid + slot index
   hash: string;
   content_type: string;
   filename: string | null;
@@ -329,15 +330,21 @@ function flattenImages(messages: Message[]): GalleryItem[] {
   const out: GalleryItem[] = [];
   for (const m of messages) {
     if (!m.attachments) continue;
+    let slot = 0;
     for (const a of m.attachments) {
-      if (!a.content_type.startsWith("image/")) continue;
+      if (!a.content_type.startsWith("image/")) {
+        slot++;
+        continue;
+      }
       out.push({
+        key: `${m.rowid}-${slot}-${a.hash}`,
         hash: a.hash,
         content_type: a.content_type,
         filename: a.filename,
         date: m.date,
         contact_name: m.contact_name,
       });
+      slot++;
     }
   }
   // Newest first — feels right for a gallery
@@ -367,7 +374,7 @@ function Gallery({ messages }: { messages: Message[] }) {
       <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
         {items.map((it) => (
           <a
-            key={`${it.hash}-${it.date}`}
+            key={it.key}
             href={`/api/image/${it.hash}`}
             target="_blank"
             rel="noreferrer"
@@ -412,10 +419,11 @@ function MessageRow({ m }: { m: Message }) {
         {m.body && <div className="whitespace-pre-wrap break-words">{m.body}</div>}
         {m.attachments && m.attachments.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-2">
-            {m.attachments.map((a) =>
-              a.content_type.startsWith("image/") ? (
+            {m.attachments.map((a, idx) => {
+              const k = `${m.rowid}-${idx}-${a.hash}`;
+              return a.content_type.startsWith("image/") ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <a key={a.hash} href={`/api/image/${a.hash}`} target="_blank" rel="noreferrer">
+                <a key={k} href={`/api/image/${a.hash}`} target="_blank" rel="noreferrer">
                   <img
                     src={`/api/image/${a.hash}`}
                     alt={a.filename ?? "attachment"}
@@ -425,17 +433,17 @@ function MessageRow({ m }: { m: Message }) {
                 </a>
               ) : a.content_type.startsWith("video/") ? (
                 <video
-                  key={a.hash}
+                  key={k}
                   src={`/api/image/${a.hash}`}
                   controls
                   className="max-h-64 max-w-xs rounded"
                   preload="none"
                 />
               ) : a.content_type.startsWith("audio/") ? (
-                <audio key={a.hash} src={`/api/image/${a.hash}`} controls preload="none" />
+                <audio key={k} src={`/api/image/${a.hash}`} controls preload="none" />
               ) : (
                 <a
-                  key={a.hash}
+                  key={k}
                   href={`/api/image/${a.hash}`}
                   className={`text-xs underline ${
                     isOut ? "text-blue-100" : "text-blue-700 dark:text-blue-400"
@@ -443,8 +451,8 @@ function MessageRow({ m }: { m: Message }) {
                 >
                   {a.filename ?? a.content_type}
                 </a>
-              ),
-            )}
+              );
+            })}
           </div>
         )}
         <div className={`text-[10px] mt-1 ${metaColor}`}>
